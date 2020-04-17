@@ -14,7 +14,7 @@ public class CharacterObject extends GameObject{
 
     public CharacterObject(GameSurface surface, Bitmap image, int x, int y) {
         super(image, x, y);
-        speed = 0.1f;
+        speed = 0.2f;
         bomb_count = 1;
         bomb_power = 1;
         kills = 0;
