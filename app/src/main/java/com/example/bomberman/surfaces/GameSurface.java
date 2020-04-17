@@ -5,14 +5,15 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.example.bomberman.R;
+import com.example.bomberman.objects.BombObject;
 import com.example.bomberman.objects.CharacterObject;
 import com.example.bomberman.objects.ControlsObject;
+
 
 public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
@@ -28,8 +29,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Bitmap character_img = BitmapFactory.decodeResource(this.getResources(), R.raw.model);
-        this.character = new CharacterObject(this, character_img, 100, 100);
-        this.control = new ControlsObject(getHeight(), getWidth(), Color.WHITE, Color.BLACK);
+        this.character = new CharacterObject(this, character_img, 100, 100, 1);
+        this.control = new ControlsObject(this, getHeight(), getWidth(), Color.WHITE, Color.BLACK);
 
         this.thread = new GameThread(this, holder);
         this.thread.setRunning(true);
@@ -79,6 +80,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void update(){
-        character.move();
+        this.character.update();
     }
+
+
 }
