@@ -1,19 +1,14 @@
 package com.example.bomberman.objects;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
-import com.example.bomberman.R;
 import com.example.bomberman.surfaces.GameSurface;
 
-import java.util.ArrayList;
-
 public class CharacterObject extends GameObject {
-    private int bomb_count, bomb_power, kills, id, installed;
+    private int bomb_count, bomb_power, kills, id, installed, height, width;
     private float speed;
     private GameSurface surface;
-    private ArrayList<BombObject> bombs = new ArrayList<>();
     private long lastDrawTime = -1, lastImageChange = -1;
     private int x_dir = 0, y_dir = 0, image_index = 0, deltaTime;
     private Bitmap currentImage;
@@ -27,6 +22,8 @@ public class CharacterObject extends GameObject {
         kills = 0;
         this.surface = surface;
         this.id = id;
+        this.width = cellSize;
+        this.height = 4 * cellSize / 3;
 
         topToBottom = new Bitmap[this.columns];
         bottomToTop = new Bitmap[this.columns];
@@ -35,10 +32,10 @@ public class CharacterObject extends GameObject {
         dead = new Bitmap[this.columns];
 
         for (int i = 0; i < this.columns; i++) {
-            topToBottom[i] = Bitmap.createScaledBitmap(createSubImageAt(0, i), getCellSize() - 5, 4 * getCellSize() / 3, false);
-            rightToLeft[i] = Bitmap.createScaledBitmap(createSubImageAt(1, i), getCellSize() - 5, 4 * getCellSize() / 3, false);
-            leftToRight[i] = Bitmap.createScaledBitmap(createSubImageAt(2, i), getCellSize() - 5, 4 * getCellSize() / 3, false);
-            bottomToTop[i] = Bitmap.createScaledBitmap(createSubImageAt(3, i), getCellSize() - 5, 4 * getCellSize() / 3, false);
+            topToBottom[i] = Bitmap.createScaledBitmap(createSubImageAt(0, i), width - 5, height, false);
+            rightToLeft[i] = Bitmap.createScaledBitmap(createSubImageAt(1, i), width - 5, height, false);
+            leftToRight[i] = Bitmap.createScaledBitmap(createSubImageAt(2, i), width - 5, height, false);
+            bottomToTop[i] = Bitmap.createScaledBitmap(createSubImageAt(3, i), width - 5, height, false);
             dead[i] = createSubImageAt(4, i);
         }
         currentImage = topToBottom[image_index];
@@ -101,31 +98,17 @@ public class CharacterObject extends GameObject {
         }
         x_dir = 0;
         y_dir = 0;
-
     }
 
-    public void addBomb() {
-        if (bombs.size() <= bomb_count) {
-            bombs.add(new BombObject(BitmapFactory.decodeResource(surface.getResources(), R.raw.bomb), 1, 1, this.x, this.y, getCellSize(), this.bomb_power, 3));
-        }
-    }
 
     public void draw(Canvas canvas) {
         canvas.drawBitmap(currentImage, x, y, null);
         this.lastDrawTime = System.nanoTime();
-        for (BombObject bomb : bombs)
-            bomb.draw(canvas);
     }
 
     public void update() {
         this.move();
         this.updateImage();
-        for (BombObject bomb : bombs) {
-            bomb.update();
-            if (bomb.isBurnedOut()) {
-                bombs.remove(bomb);
-            }
-        }
     }
 
     public void setX_dir(int x) {
@@ -190,5 +173,19 @@ public class CharacterObject extends GameObject {
 
     public int getInstalled() {
         return installed;
+    }
+    public int getRow(){
+        return (y+ imageHeight /2)/cellSize-1;
+    }
+    public int getColumn(){
+        return (x + imageWidth /2)/cellSize-1;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 }

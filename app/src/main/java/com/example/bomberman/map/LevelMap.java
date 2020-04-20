@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.util.Log;
 
 import com.example.bomberman.R;
+import com.example.bomberman.objects.BombObject;
 import com.example.bomberman.objects.CharacterObject;
 import com.example.bomberman.objects.MapBlock;
 import com.example.bomberman.surfaces.GameSurface;
@@ -19,6 +20,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 public class LevelMap {
     private MapBlock[][] blocks;
@@ -27,6 +29,7 @@ public class LevelMap {
     private Paint linePaint = new Paint();
     private int cellSize;
     private GameSurface surface;
+    private ArrayList<BombObject> bombs = new ArrayList<>();
 
     public LevelMap(GameSurface surface, int width, int height, int map){
         Log.d("Map", "Start loading");
@@ -81,7 +84,18 @@ public class LevelMap {
     }
 
     public void update(){
-        if((character.getY_dir() != 0 || character.getX_dir() != 0) && characterCanMove(character.getX_dir(), character.getY_dir())) {
+        try {
+            for (int i = 0; i < bombs.size(); i++) {
+                bombs.get(i).update();
+                if (bombs.get(i).canRemove()) {
+                    bombs.remove(i);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        if((character.getY_dir() != 0 || character.getX_dir() != 0) && !solidBlockNear(character.getRow(), character.getColumn(),
+                character.getX(), character.getY(), character.getWidth(), character.getHeight(), character.getX_dir(), character.getY_dir())) {
             character.update();
         }else{
             character.updateImage();
@@ -99,6 +113,8 @@ public class LevelMap {
         for(int i = 0; i <= width/cellSize; i++){
             canvas.drawLine(i*cellSize, 0, i*cellSize, height, linePaint);
         }
+        for (BombObject bomb : bombs)
+            bomb.draw(canvas);
         character.draw(canvas);
     }
 
@@ -107,42 +123,50 @@ public class LevelMap {
         character.setY_dir(y);
     }
 
-    public boolean characterCanMove(int dirx, int diry){
-        int col = (character.getX()+character.getWidth()/2)/cellSize-1;
-        int row = (character.getY()+character.getHeight()/2)/cellSize-1;
+    public boolean solidBlockNear(int row, int col, int x, int y, int width, int height, int dirx, int diry){
         try {
-            MapBlock block = blocks[row + diry][col + dirx];
-            if(!block.isPassable()){
-                Log.d("Map", block.getX() + " " + block.getY() + "||" + character.getX() + " " + character.getY() + " " + character.getHeight());
-                if(dirx < 0) {
-                    if (block.getX() + cellSize >= character.getX())
-                        return false;
+            //Log.d("Map", row + "|" + col + "  " + width + "|" + height + " " + dirx + "|" + diry);
+            if(!blocks[row + diry][col + dirx].isPassable()){
+               if(dirx < 0) {
+                    if (blocks[row + diry][col + dirx].getX() + cellSize >= x) {
+                        return true;
+                    }
                 }else if(dirx > 0){
-                    if(block.getX() <= character.getX() + cellSize)
-                        return false;
+                    if(blocks[row + diry][col + dirx].getX() <= x + width) {
+                        return true;
+                    }
                 }
                 if(diry < 0){
-                    if(block.getY() + cellSize/2 >= character.getY()) {
-                        return false;
+                    if(blocks[row + diry][col + dirx].getY() + cellSize/2 >= y) {
+                        return true;
                     }
                 }else if(diry > 0){
-                    if(block.getY() <= character.getY() + (4*cellSize / 3)) {
-                        return false;
+                    if(blocks[row + diry][col + dirx].getY() <= y + height) {
+                        return true;
                     }
                 }
             }
         }catch (Exception e){}
         //Log.d("Map", row + " :: " + col + "||" + (row + diry) + " " + (col + dirx));
-        return true;
+        return false;
     }
 
+    public boolean solidBlockInCell(int row, int column){
+        if(row >= 0 && column >= 0){
+            return !blocks[row][column].isPassable();
+        }
+        return true;
+    }
 
     public void characterStay(){
         character.stay();
     }
 
     public void plantBomb(){
-        character.addBomb();
+        if (bombs.size() <= character.getBomb_count()) {
+            bombs.add(new BombObject(this, BitmapFactory.decodeResource(surface.getResources(), R.raw.bomb), 6, 7,
+                    character.getColumn(), character.getRow(), getCellSize(), character.getBomb_power(), 3000));
+        }
     }
 
     public int getCellSize(){

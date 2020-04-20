@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 
 public class GameObject {
     protected Bitmap image;
-    protected final int height, width;
+    protected final int imageHeight, imageWidth;
     protected final int rows, columns;
     protected int cellSize;
 
@@ -19,28 +19,28 @@ public class GameObject {
         this.columns = columns;
         this.cellSize = cellSize;
         if(image != null) {
-            this.height = image.getHeight() / rows;
-            this.width = image.getWidth() / columns;
+            this.imageHeight = image.getHeight() / rows;
+            this.imageWidth = image.getWidth() / columns;
         }else{
-            width = 0;
-            height = 0;
+            imageWidth = 0;
+            imageHeight = 0;
         }
     }
 
     protected Bitmap createSubImageAt(int row, int col)  {
         if(image != null) {
-            Bitmap subImage = Bitmap.createBitmap(image, col * width, row * height, width, height);
+            Bitmap subImage = Bitmap.createBitmap(image, col * imageWidth, row * imageHeight, imageWidth, imageHeight);
             return subImage;
         }
         return null;
     }
 
-    public int getHeight() {
-        return height;
+    public int getImageHeight() {
+        return imageHeight;
     }
 
-    public int getWidth() {
-        return width;
+    public int getImageWidth() {
+        return imageWidth;
     }
 
     public int getX() {
@@ -49,10 +49,6 @@ public class GameObject {
 
     public int getY() {
         return y;
-    }
-
-    public int getCellSize() {
-        return cellSize;
     }
 
     public void setCellSize(int cellSize) {
