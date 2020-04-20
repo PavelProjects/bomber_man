@@ -18,7 +18,7 @@ public class CharacterObject extends GameObject {
         super(image, rows, columns, col * cellSize, row * cellSize, cellSize);
         speed = 0.2f;
         bomb_count = 3;
-        bomb_power = 2;
+        bomb_power = 5;
         kills = 0;
         this.surface = surface;
         this.id = id;

@@ -87,6 +87,9 @@ public class LevelMap {
         try {
             for (int i = 0; i < bombs.size(); i++) {
                 bombs.get(i).update();
+                if(bombs.get(i).isDetonated() && bombs.get(i).inExplosionRange(character.getRow(), character.getColumn())){
+                    Log.d("Map", "Dead");
+                }
                 if (bombs.get(i).canRemove()) {
                     bombs.remove(i);
                 }

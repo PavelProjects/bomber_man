@@ -8,14 +8,12 @@ import com.example.bomberman.map.LevelMap;
 
 
 public class BombObject extends GameObject {
-    private int power, countdown;
+    private int power, countdown, instRow, instCol;
     private long installTime, lastDrawTime = -1;
     private boolean detonated = false, burned = false, remove = false;
     private int imageIndex = 0, changeTime = 200; //ms
     private int spaceUp = 0, spaceDown = 0, spaceLeft = 0, spaceRight = 0;
 
-    private final int explosionTime = 500; //ms
-    private final int afterExplosionFire = 500; //ms
     private LevelMap lvl;
 
     private Bitmap[] bombImage, explosion_center, explosion_left, explosion_right, explosion_down, explosion_up, explosion_line_vertical, explosion_line_horizontal, after_explosion;
@@ -24,9 +22,11 @@ public class BombObject extends GameObject {
     public BombObject(LevelMap lvl, Bitmap image, int imageRows, int imageColumns, int col, int row, int cellSize, int power, int countdown) {
         super(image, imageRows, imageColumns, cellSize * col, cellSize * row, cellSize);
         this.lvl = lvl;
-        this.countdown = countdown; //ms!!!!!!
+        this.countdown = countdown;
         this.installTime = System.nanoTime();
         this.power = power;
+        this.instRow = row;
+        this.instCol = col;
 
         bombImage = new Bitmap[2];
         explosion_center = new Bitmap[4];
@@ -75,7 +75,7 @@ public class BombObject extends GameObject {
                 spaceRight = 0;
             }
         }
-        Log.d("Bomb", spaceUp + "|" + spaceDown + "|" +spaceRight + "|" + spaceLeft);
+        //Log.d("Bomb", spaceUp + "|" + spaceDown + "|" +spaceRight + "|" + spaceLeft);
         currentImage = bombImage[imageIndex];
     }
 
@@ -83,6 +83,8 @@ public class BombObject extends GameObject {
         long now = System.nanoTime();
         int passed = (int) ((now - installTime) / 1000000);
 
+        int afterExplosionFire = 500;
+        int explosionTime = 500;
         if(passed >= countdown + explosionTime + afterExplosionFire && detonated && burned){
             remove = true;
         }else if(passed >= countdown + explosionTime && detonated && !burned){
@@ -128,7 +130,7 @@ public class BombObject extends GameObject {
                 canvas.drawBitmap(explosion_line_vertical[imageIndex], this.x, this.y - i*cellSize, null);
             for(int i = 0; i < spaceDown; i++)
                 canvas.drawBitmap(explosion_line_vertical[imageIndex], this.x, this.y + i*cellSize, null);
-            
+
             canvas.drawBitmap(explosion_up[imageIndex], this.x, this.y - spaceUp*cellSize, null);
             canvas.drawBitmap(explosion_down[imageIndex], this.x, this.y + spaceDown*cellSize, null);
             canvas.drawBitmap(explosion_left[imageIndex], this.x - spaceLeft*cellSize, this.y, null);
@@ -136,6 +138,26 @@ public class BombObject extends GameObject {
         }
         canvas.drawBitmap(currentImage, this.x, this.y, null);
 
+    }
+
+    public boolean inExplosionRange(int row, int column){
+        if(instRow >= row && instRow + spaceDown >= row && instCol == column)
+            return true;
+        if(instRow <= row && instRow - spaceUp >= row && instCol == column)
+            return true;
+        if(instRow == row && instCol >= column && instCol - spaceLeft <= column)
+            return true;
+        if(instRow == row && instCol <= column && instCol + spaceRight >= column)
+            return true;
+        return false;
+    }
+
+    public int getRow(){
+        return instRow;
+    }
+
+    public int getColumn(){
+        return instCol;
     }
 
     public boolean isDetonated() {
