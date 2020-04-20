@@ -13,38 +13,70 @@ import com.example.bomberman.objects.CharacterObject;
 import com.example.bomberman.objects.MapBlock;
 import com.example.bomberman.surfaces.GameSurface;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 public class LevelMap {
     private MapBlock[][] blocks;
     private CharacterObject character;
     private int width, height, rows, columns;
     private Paint linePaint = new Paint();
-    private final int cellSize = 64;
+    private int cellSize;
     private GameSurface surface;
 
     public LevelMap(GameSurface surface, int width, int height, int map){
         Log.d("Map", "Start loading");
-        rows = width/cellSize;
-        columns = height/cellSize;
-        loadFromJson();
         this.surface = surface;
         this.height = height;
         this.width = width;
-        Bitmap character_img = BitmapFactory.decodeResource(surface.getResources(), R.raw.bomberman);
-        this.character = new CharacterObject(this, surface, character_img, 5, 3, 128, 182, cellSize, 1);
+        loadFromJson(map);
         linePaint.setColor(Color.BLACK);
         linePaint.setStrokeWidth(2);
         Log.d("Map", "Loaded, rows|columns");
     }
 
-    private void loadFromJson(){
-        blocks = new MapBlock[rows][columns];
-        for(int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                blocks[i][j] = new MapBlock(null, i * 64, j * 64, cellSize, false, true);
+    private void loadFromJson(int map){
+        String jsonString = null;
+        try{
+            InputStream inputStream = surface.getResources().openRawResource(map);
+            InputStreamReader inputReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputReader);
+            String line;
+            StringBuilder builder = new StringBuilder();
+            while ((line = bufferedReader.readLine()) != null){
+                builder.append(line);
+                builder.append("\n");
             }
+            jsonString = builder.toString();
+        }catch(Exception e){
+            e.printStackTrace();
         }
-        for(int i = 0; i < rows*columns){
-            
+        Log.d("Map", jsonString);
+        try {
+            JSONObject jsonMap = new JSONObject(jsonString);
+            this.cellSize = jsonMap.getInt("cellSize");
+            Bitmap character_img = BitmapFactory.decodeResource(surface.getResources(), R.raw.bomberman);
+            this.character = new CharacterObject(surface, character_img, 5, 3, jsonMap.getInt("chr_col"), jsonMap.getInt("chr_row"), cellSize, 1);
+            JSONArray jsonBlocks = jsonMap.getJSONArray("blocks");
+            rows = width/cellSize;
+            columns = height/cellSize;
+            blocks = new MapBlock[rows][columns];
+            for(int i = 0; i < rows; i++) {
+                for (int j = 0; j < columns; j++) {
+                    blocks[i][j] = new MapBlock(null, i * 64, j * 64, cellSize, false, true);
+                }
+            }
+            JSONObject bl;
+            for(int i = 0; i < jsonBlocks.length(); i++){
+                bl = jsonBlocks.getJSONObject(i);
+                blocks[bl.getInt("row")][bl.getInt("col")] = new MapBlock(null, bl.getInt("row"), bl.getInt("col"), cellSize, bl.getBoolean("bonus"), bl.getBoolean("passable"));
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -81,23 +113,26 @@ public class LevelMap {
         try {
             MapBlock block = blocks[row + diry][col + dirx];
             if(!block.isPassable()){
+                Log.d("Map", block.getX() + " " + block.getY() + "||" + character.getX() + " " + character.getY() + " " + character.getHeight());
                 if(dirx < 0) {
                     if (block.getX() + cellSize >= character.getX())
                         return false;
                 }else if(dirx > 0){
-                    if(block.getX() <= character.getX() + character.getWidth())
+                    if(block.getX() <= character.getX() + cellSize)
                         return false;
                 }
                 if(diry < 0){
-                    if(block.getY() + cellSize/2 >= character.getY())
+                    if(block.getY() + cellSize/2 >= character.getY()) {
                         return false;
+                    }
                 }else if(diry > 0){
-                    if(block.getY() <= character.getY() + character.getHeight())
+                    if(block.getY() <= character.getY() + (4*cellSize / 3)) {
                         return false;
+                    }
                 }
             }
         }catch (Exception e){}
-        Log.d("Map", row + " :: " + col + "||" + (row + diry) + " " + (col + dirx));
+        //Log.d("Map", row + " :: " + col + "||" + (row + diry) + " " + (col + dirx));
         return true;
     }
 

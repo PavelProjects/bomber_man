@@ -1,0 +1,26 @@
+{
+  "cellSize" : 64,
+  "name" : "test",
+  "chr_row" : 1,
+  "chr_col": 2,
+  "blocks" : [
+    {
+      "row" : 1,
+      "col" : 1,
+      "bonus" : "false",
+      "passable" : "false"
+    },
+    {
+      "row" : 2,
+      "col" : 2,
+      "bonus" : "false",
+      "passable" : "false"
+    },
+    {
+      "row" : 3,
+      "col" : 3,
+      "bonus" : "false",
+      "passable" : "false"
+    }
+  ]
+}

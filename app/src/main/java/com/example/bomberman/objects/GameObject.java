@@ -22,8 +22,8 @@ public class GameObject {
             this.height = image.getHeight() / rows;
             this.width = image.getWidth() / columns;
         }else{
-            width = x;
-            height = y;
+            width = 0;
+            height = 0;
         }
     }
 

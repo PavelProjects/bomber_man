@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
 import com.example.bomberman.R;
-import com.example.bomberman.map.LevelMap;
 import com.example.bomberman.surfaces.GameSurface;
 
 import java.util.ArrayList;
@@ -13,7 +12,6 @@ import java.util.ArrayList;
 public class CharacterObject extends GameObject {
     private int bomb_count, bomb_power, kills, id, installed;
     private float speed;
-    private LevelMap lvl;
     private GameSurface surface;
     private ArrayList<BombObject> bombs = new ArrayList<>();
     private long lastDrawTime = -1, lastImageChange = -1;
@@ -21,13 +19,12 @@ public class CharacterObject extends GameObject {
     private Bitmap currentImage;
     private Bitmap topToBottom[], leftToRight[], rightToLeft[], bottomToTop[], dead[];
 
-    public CharacterObject(LevelMap lvl, GameSurface surface, Bitmap image, int rows, int columns, int x, int y, int cellSize, int id) {
-        super(image, rows, columns, x, y, cellSize);
+    public CharacterObject(GameSurface surface, Bitmap image, int rows, int columns, int col, int row, int cellSize, int id) {
+        super(image, rows, columns, col * cellSize, row * cellSize, cellSize);
         speed = 0.2f;
         bomb_count = 3;
         bomb_power = 2;
         kills = 0;
-        this.lvl = lvl;
         this.surface = surface;
         this.id = id;
 

@@ -27,7 +27,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        this.levelMap = new LevelMap(this, getWidth(), getHeight(), 1);
+        this.levelMap = new LevelMap(this, getWidth(), getHeight(), R.raw.map);
         this.control = new ControlsObject(this, 3*levelMap.getCellSize(), getHeight() - 3*levelMap.getCellSize(), Color.BLUE, levelMap.getCellSize());
 
         this.thread = new GameThread(this, holder);
