@@ -10,17 +10,14 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.example.bomberman.R;
-import com.example.bomberman.objects.BackGround;
-import com.example.bomberman.objects.CharacterObject;
+import com.example.bomberman.map.LevelMap;
 import com.example.bomberman.objects.ControlsObject;
 
 
 public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
-    private CharacterObject character;
     private ControlsObject control;
-    private BackGround back;
-    private final int gameCubeHeight = 64;
+    private LevelMap levelMap;
 
     public GameSurface(Context context) {
         super(context);
@@ -30,10 +27,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Bitmap character_img = BitmapFactory.decodeResource(this.getResources(), R.raw.bomberman);
-        this.character = new CharacterObject(this, character_img, 5, 3, getWidth()/2, getHeight()/2, 1);
-        this.control = new ControlsObject(this, getHeight(), getWidth(), Color.BLUE);
-        this.back = new BackGround(getWidth(), getHeight(), gameCubeHeight);
+        this.levelMap = new LevelMap(this, getWidth(), getHeight(), 1);
+        this.control = new ControlsObject(this, 3*levelMap.getCellSize(), getHeight() - 3*levelMap.getCellSize(), Color.BLUE, levelMap.getCellSize());
 
         this.thread = new GameThread(this, holder);
         this.thread.setRunning(true);
@@ -45,10 +40,10 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN :
             case MotionEvent.ACTION_MOVE:
-                control.pressEvent(this.character, (int) event.getX(), (int) event.getY());
+                control.pressEvent(this.levelMap, (int) event.getX(), (int) event.getY());
                 break;
             case MotionEvent.ACTION_UP :
-                character.stay();
+                this.levelMap.getCharacter().stay();
                 break;
         }
         return true;
@@ -76,16 +71,11 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void draw(Canvas canvas){
         super.draw(canvas);
-        this.back.draw(canvas);
-        this.character.draw(canvas);
+        this.levelMap.draw(canvas);
         this.control.draw(canvas);
     }
 
     public void update(){
-        this.character.update();
-    }
-
-    public int getGameCubeHeight() {
-        return gameCubeHeight;
+        this.levelMap.update();
     }
 }
