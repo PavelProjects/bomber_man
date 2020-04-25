@@ -21,17 +21,19 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 
 public class LevelMap {
     private MapBlock[][] blocks;
     private CharacterObject character;
-    private int width, height, rows, columns;
+    private int width, height;
+    public static int rows, columns;
     private Paint linePaint = new Paint();
     private int cellSize;
     private GameSurface surface;
     private ArrayList<BombObject> bombs = new ArrayList<>();
 
-    public LevelMap(GameSurface surface, int width, int height, int map){
+    public LevelMap(GameSurface surface, int width, int height, int map) {
         Log.d("Map", "Start loading");
         this.surface = surface;
         this.height = height;
@@ -39,144 +41,140 @@ public class LevelMap {
         loadFromJson(map);
         linePaint.setColor(Color.BLACK);
         linePaint.setStrokeWidth(2);
-        Log.d("Map", "Loaded, rows|columns");
+        Log.d("Map", "Loaded");
     }
 
-    private void loadFromJson(int map){
+    private void loadFromJson(int map) {
         String jsonString = null;
-        try{
+        try {
             InputStream inputStream = surface.getResources().openRawResource(map);
             InputStreamReader inputReader = new InputStreamReader(inputStream);
             BufferedReader bufferedReader = new BufferedReader(inputReader);
             String line;
             StringBuilder builder = new StringBuilder();
-            while ((line = bufferedReader.readLine()) != null){
+            while ((line = bufferedReader.readLine()) != null) {
                 builder.append(line);
                 builder.append("\n");
             }
             jsonString = builder.toString();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        Log.d("Map", jsonString);
+        //Log.d("Map", jsonString);
         try {
             JSONObject jsonMap = new JSONObject(jsonString);
             this.cellSize = jsonMap.getInt("cellSize");
-            Bitmap character_img = BitmapFactory.decodeResource(surface.getResources(), R.raw.bomberman);
-            this.character = new CharacterObject(surface, character_img, 5, 3, jsonMap.getInt("chr_col"), jsonMap.getInt("chr_row"), cellSize, 1);
+            spawnCharacter(jsonMap.getInt("chr_row"), jsonMap.getInt("chr_col"));
             JSONArray jsonBlocks = jsonMap.getJSONArray("blocks");
-            rows = width/cellSize;
-            columns = height/cellSize;
-            blocks = new MapBlock[rows][columns];
-            for(int i = 0; i < rows; i++) {
-                for (int j = 0; j < columns; j++) {
-                    blocks[i][j] = new MapBlock(null, i * 64, j * 64, cellSize, false, true);
+            rows = height / cellSize;
+            columns = width / cellSize;
+            blocks = new MapBlock[rows+1][columns+1];
+            for (int i = 0; i <= rows; i++) {
+                for (int j = 0; j <= columns; j++) {
+                    blocks[i][j] = new MapBlock(null, i * cellSize, j * cellSize, cellSize, 2);
                 }
             }
             JSONObject bl;
-            for(int i = 0; i < jsonBlocks.length(); i++){
+            for (int i = 0; i < jsonBlocks.length(); i++) {
                 bl = jsonBlocks.getJSONObject(i);
-                blocks[bl.getInt("row")][bl.getInt("col")] = new MapBlock(null, bl.getInt("row"), bl.getInt("col"), cellSize, bl.getBoolean("bonus"), bl.getBoolean("passable"));
+                blocks[bl.getInt("row")][bl.getInt("col")] = new MapBlock(null,
+                        bl.getInt("row"), bl.getInt("col"), cellSize, bl.getInt("type"));
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void update(){
+    public void spawnCharacter(int row, int col) {
+        Bitmap character_img = BitmapFactory.decodeResource(surface.getResources(), R.raw.bomberman);
+        this.character = new CharacterObject(this, character_img, 5, 3, row, col, cellSize, 1);
+    }
+
+    public void update() {
         try {
+            character.update(this);
             for (int i = 0; i < bombs.size(); i++) {
-                bombs.get(i).update();
-                if(bombs.get(i).isDetonated() && bombs.get(i).inExplosionRange(character.getRow(), character.getColumn())){
-                    Log.d("Map", "Dead");
+                bombs.get(i).update(this);
+                if (bombs.get(i).isDetonated()) {
+                    BombObject bomb = bombs.get(i);
+                    if (bomb.getRow() - bomb.getSpaces()[0] - 1 >= 0) {
+                        if (blocks[bomb.getRow() - bomb.getSpaces()[0] - 1][bomb.getColumn()].getType() == 1) {
+                            blocks[bomb.getRow() - bomb.getSpaces()[0] - 1][bomb.getColumn()].destroy();
+                        }
+                    }
+                    if (bomb.getRow() + bomb.getSpaces()[1] + 1 < this.rows) {
+                        if (blocks[bomb.getRow() + bomb.getSpaces()[1] + 1][bomb.getColumn()].getType() == 1) {
+                            blocks[bomb.getRow() + bomb.getSpaces()[1] + 1][bomb.getColumn()].destroy();
+                        }
+                    }
+                    if (bomb.getColumn() + bomb.getSpaces()[2] + 1 < this.columns) {
+                        if (blocks[bomb.getRow()][bomb.getColumn() + bomb.getSpaces()[2] + 1].getType() == 1) {
+                            blocks[bomb.getRow()][bomb.getColumn() + bomb.getSpaces()[2] + 1].destroy();
+                        }
+                    }
+                    if (bomb.getColumn() - bomb.getSpaces()[3] - 1 >= 0) {
+                        if (blocks[bomb.getRow()][bomb.getColumn() - bomb.getSpaces()[3] - 1].getType() == 1) {
+                            blocks[bomb.getRow()][bomb.getColumn() - bomb.getSpaces()[3] - 1].destroy();
+                        }
+                    }
+                    for (BombObject bombObject : bombs) {
+                        if (bombs.get(i).inExplosionRange(bombObject.getRow(), bombObject.getColumn()) && !bombObject.isDetonated()) {
+                            bombObject.detonate();
+                        }
+                    }
                 }
                 if (bombs.get(i).canRemove()) {
+                    character.removeBomb(bombs.get(i));
                     bombs.remove(i);
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        if((character.getY_dir() != 0 || character.getX_dir() != 0) && !solidBlockNear(character.getRow(), character.getColumn(),
-                character.getX(), character.getY(), character.getWidth(), character.getHeight(), character.getX_dir(), character.getY_dir())) {
-            character.update();
-        }else{
-            character.updateImage();
         }
     }
 
-    public void draw(Canvas canvas){
+    public void draw(Canvas canvas) {
         canvas.drawColor(Color.WHITE);
-        for(int i = 0; i < rows; i++)
-            for(int j = 0; j < columns; j++)
+        for (int i = 0; i < rows; i++)
+            for (int j = 0; j < columns; j++)
                 blocks[i][j].draw(canvas);
-        for(int i = 0; i <= height/cellSize; i++){
-            canvas.drawLine(0, i*cellSize, width, i*cellSize, linePaint);
+        for (int i = 0; i <= height / cellSize; i++) {
+            canvas.drawLine(0, i * cellSize, width, i * cellSize, linePaint);
         }
-        for(int i = 0; i <= width/cellSize; i++){
-            canvas.drawLine(i*cellSize, 0, i*cellSize, height, linePaint);
+        for (int i = 0; i <= width / cellSize; i++) {
+            canvas.drawLine(i * cellSize, 0, i * cellSize, height, linePaint);
         }
-        for (BombObject bomb : bombs)
-            bomb.draw(canvas);
+        for (int i = 0; i < bombs.size(); i++) //сделать бомбы наследников объекта блока карты
+            bombs.get(i).draw(canvas);
         character.draw(canvas);
     }
 
-    public void setCharacterDirection(int x, int y){
-        character.setX_dir(x);
-        character.setY_dir(y);
-    }
-
-    public boolean solidBlockNear(int row, int col, int x, int y, int width, int height, int dirx, int diry){
-        try {
-            //Log.d("Map", row + "|" + col + "  " + width + "|" + height + " " + dirx + "|" + diry);
-            if(!blocks[row + diry][col + dirx].isPassable()){
-               if(dirx < 0) {
-                    if (blocks[row + diry][col + dirx].getX() + cellSize >= x) {
-                        return true;
-                    }
-                }else if(dirx > 0){
-                    if(blocks[row + diry][col + dirx].getX() <= x + width) {
-                        return true;
-                    }
-                }
-                if(diry < 0){
-                    if(blocks[row + diry][col + dirx].getY() + cellSize/2 >= y) {
-                        return true;
-                    }
-                }else if(diry > 0){
-                    if(blocks[row + diry][col + dirx].getY() <= y + height) {
-                        return true;
-                    }
-                }
-            }
-        }catch (Exception e){}
-        //Log.d("Map", row + " :: " + col + "||" + (row + diry) + " " + (col + dirx));
-        return false;
-    }
-
-    public boolean solidBlockInCell(int row, int column){
-        if(row >= 0 && column >= 0){
+    public boolean solidBlockInCell(int row, int column) {
+        //Log.d("Map", row + " " + column + "||" + rows + " " + columns);
+       if (row >= 0 && column >= 0 && row < rows && column < columns) {
             return !blocks[row][column].isPassable();
         }
         return true;
     }
 
-    public void characterStay(){
-        character.stay();
-    }
-
-    public void plantBomb(){
-        if (bombs.size() <= character.getBomb_count()) {
-            bombs.add(new BombObject(this, BitmapFactory.decodeResource(surface.getResources(), R.raw.bomb), 6, 7,
-                    character.getColumn(), character.getRow(), getCellSize(), character.getBomb_power(), 3000));
-        }
-    }
-
-    public int getCellSize(){
+    public int getCellSize() {
         return cellSize;
     }
-
-    public CharacterObject getCharacter(){
+    public CharacterObject getCharacter() {
         return character;
+    }
+    public MapBlock[][] getBlocks(){
+        return blocks;
+    }
+    public List<BombObject> getBombs(){
+        return bombs;
+    }
+
+    public int getWidth(){
+        return surface.getWidth();
+    }
+
+    public int getHeight(){
+        return surface.getHeight();
     }
 }

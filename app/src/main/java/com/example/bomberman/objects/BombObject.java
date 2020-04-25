@@ -8,18 +8,20 @@ import com.example.bomberman.map.LevelMap;
 
 
 public class BombObject extends GameObject {
-    private int power, countdown, instRow, instCol;
+    private int inst_id, power, countdown, instRow, instCol;
     private long installTime, lastDrawTime = -1;
     private boolean detonated = false, burned = false, remove = false;
     private int imageIndex = 0, changeTime = 200; //ms
     private int spaceUp = 0, spaceDown = 0, spaceLeft = 0, spaceRight = 0;
+
+    private final int explosionTime = 1000;
 
     private LevelMap lvl;
 
     private Bitmap[] bombImage, explosion_center, explosion_left, explosion_right, explosion_down, explosion_up, explosion_line_vertical, explosion_line_horizontal, after_explosion;
     private Bitmap currentImage;
 
-    public BombObject(LevelMap lvl, Bitmap image, int imageRows, int imageColumns, int col, int row, int cellSize, int power, int countdown) {
+    public BombObject(LevelMap lvl, Bitmap image, int imageRows, int imageColumns, int inst_id, int col, int row, int cellSize, int power, int countdown) {
         super(image, imageRows, imageColumns, cellSize * col, cellSize * row, cellSize);
         this.lvl = lvl;
         this.countdown = countdown;
@@ -27,6 +29,7 @@ public class BombObject extends GameObject {
         this.power = power;
         this.instRow = row;
         this.instCol = col;
+        this.inst_id = inst_id;
 
         bombImage = new Bitmap[2];
         explosion_center = new Bitmap[4];
@@ -75,29 +78,37 @@ public class BombObject extends GameObject {
                 spaceRight = 0;
             }
         }
-        //Log.d("Bomb", spaceUp + "|" + spaceDown + "|" +spaceRight + "|" + spaceLeft);
         currentImage = bombImage[imageIndex];
     }
 
-    public void update() {
+    @Override
+    public void update(LevelMap lvl) {
         long now = System.nanoTime();
         int passed = (int) ((now - installTime) / 1000000);
-
-        int afterExplosionFire = 500;
-        int explosionTime = 500;
-        if(passed >= countdown + explosionTime + afterExplosionFire && detonated && burned){
+        if(passed >= explosionTime/2 && detonated && burned){
             remove = true;
-        }else if(passed >= countdown + explosionTime && detonated && !burned){
-            burned = true;
-            changeTime = afterExplosionFire / 6;
-            imageIndex = 0;
-        }else if (passed >= countdown && !detonated) {
-            detonated = true;
-            changeTime = explosionTime / 4;
-            imageIndex = 0;
+        }else if(passed > explosionTime/2 && detonated && !burned){
+            burn();
+        }else if (passed > countdown && !detonated) {
+            detonate();
         }
     }
 
+    public void detonate(){
+        if(!detonated) {
+            detonated = true;
+            changeTime = explosionTime / 8;
+            imageIndex = 0;
+            installTime = System.nanoTime();
+        }
+    }
+    public void burn(){
+        burned = true;
+        changeTime = explosionTime / 12;
+        imageIndex = 0;
+        installTime = System.nanoTime();
+    }
+    @Override
     public void draw(Canvas canvas) {
         if(lastDrawTime == -1)
             lastDrawTime = System.nanoTime();
@@ -141,9 +152,9 @@ public class BombObject extends GameObject {
     }
 
     public boolean inExplosionRange(int row, int column){
-        if(instRow >= row && instRow + spaceDown >= row && instCol == column)
+        if(instRow <= row && instRow + spaceDown >= row && instCol == column)
             return true;
-        if(instRow <= row && instRow - spaceUp >= row && instCol == column)
+        if(instRow >= row && instRow - spaceUp >= row && instCol == column)
             return true;
         if(instRow == row && instCol >= column && instCol - spaceLeft <= column)
             return true;
@@ -158,6 +169,14 @@ public class BombObject extends GameObject {
 
     public int getColumn(){
         return instCol;
+    }
+
+    public int getInstId(){
+        return inst_id;
+    }
+
+    public int[] getSpaces(){
+        return new int[]{spaceUp, spaceDown, spaceRight, spaceLeft};
     }
 
     public boolean isDetonated() {

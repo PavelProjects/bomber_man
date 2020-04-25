@@ -1,26 +1,78 @@
 {
-  "cellSize" : 64,
-  "name" : "test",
-  "chr_row" : 1,
-  "chr_col": 2,
-  "blocks" : [
+  "cellSize": 64,
+  "name": "test",
+  "chr_row": 3,
+  "chr_col": 1,
+  "blocks": [
     {
-      "row" : 1,
-      "col" : 1,
-      "bonus" : "false",
-      "passable" : "false"
+      "row": 1,
+      "col": 1,
+      "type": 0
     },
     {
-      "row" : 2,
-      "col" : 2,
-      "bonus" : "false",
-      "passable" : "false"
+      "row": 1,
+      "col": 2,
+      "type": 0
     },
     {
-      "row" : 3,
-      "col" : 3,
-      "bonus" : "false",
-      "passable" : "false"
+      "row": 1,
+      "col": 3,
+      "type": 0
+    },
+    {
+      "row": 1,
+      "col": 4,
+      "type": 0
+    },
+    {
+      "row": 1,
+      "col": 5,
+      "type": 0
+    },
+    {
+      "row": 1,
+      "col": 6,
+      "type": 0
+    },
+    {
+      "row": 2,
+      "col": 6,
+      "type": 0
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "type": 0
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "type": 0
+    },
+    {
+      "row": 3,
+      "col": 3,
+      "type": 0
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "type": 0
+    },
+    {
+      "row": 3,
+      "col": 6,
+      "type": 0
+    },
+    {
+      "row": 4,
+      "col": 6,
+      "type": 0
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "type": 1
     }
   ]
 }

@@ -1,8 +1,11 @@
 package com.example.bomberman.objects;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 
-public class GameObject {
+import com.example.bomberman.map.LevelMap;
+
+public class GameObject{
     protected Bitmap image;
     protected final int imageHeight, imageWidth;
     protected final int rows, columns;
@@ -14,6 +17,7 @@ public class GameObject {
     public GameObject(Bitmap image, int rows, int columns, int x, int y, int cellSize){
         this.image = image;
         this.x = x;
+
         this.y = y;
         this.rows = rows;
         this.columns = columns;
@@ -54,4 +58,7 @@ public class GameObject {
     public void setCellSize(int cellSize) {
         this.cellSize = cellSize;
     }
+
+    public void update(LevelMap lvl){}
+    public void draw(Canvas canvas){}
 }
