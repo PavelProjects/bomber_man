@@ -56,126 +56,130 @@ public class BombObject extends GameObject {
         for (int i = 0; i < 6; i++) {
             after_explosion[i] = Bitmap.createScaledBitmap(createSubImageAt(5, i), this.cellSize, this.cellSize, false);
         }
-        for(int i = power; i > 0; i--){
-            if(!lvl.solidBlockInCell(row + (-1)*i, col)){
+        currentImage = bombImage[imageIndex];
+        for (int i = power; i > 0; i--) {
+            if (!lvl.solidBlockInCell(instRow + (-1) * i, instCol)) {
                 spaceUp++;
-            }else if(spaceUp != 0){
+            } else if (spaceUp != 0) {
                 spaceUp = 0;
             }
-            if(!lvl.solidBlockInCell(row + i, col)){
+            if (!lvl.solidBlockInCell(instRow + i, instCol)) {
                 spaceDown++;
-            }else if(spaceDown != 0){
+            } else if (spaceDown != 0) {
                 spaceDown = 0;
             }
-            if(!lvl.solidBlockInCell(row, col + (-1)*i)){
+            if (!lvl.solidBlockInCell(instRow, instCol + (-1) * i)) {
                 spaceLeft++;
-            }else if(spaceLeft != 0){
+            } else if (spaceLeft != 0) {
                 spaceLeft = 0;
             }
-            if(!lvl.solidBlockInCell(row, col + i)){
+            if (!lvl.solidBlockInCell(instRow, instCol + i)) {
                 spaceRight++;
-            }else if(spaceRight != 0){
+            } else if (spaceRight != 0) {
                 spaceRight = 0;
             }
         }
-        currentImage = bombImage[imageIndex];
+        lvl.getBlocks()[instRow][instCol].setType(MapBlock.TYPE_BOMB, -1);
     }
 
     @Override
     public void update(LevelMap lvl) {
         long now = System.nanoTime();
         int passed = (int) ((now - installTime) / 1000000);
-        if(passed >= explosionTime/2 && detonated && burned){
+        if (passed >= explosionTime / 2 && detonated && burned) {
             remove = true;
-        }else if(passed > explosionTime/2 && detonated && !burned){
+        } else if (passed > explosionTime / 2 && detonated && !burned) {
             burn();
-        }else if (passed > countdown && !detonated) {
+        } else if (passed > countdown && !detonated) {
             detonate();
         }
     }
 
-    public void detonate(){
-        if(!detonated) {
+    public void detonate() {
+        if (!detonated) {
             detonated = true;
             changeTime = explosionTime / 8;
             imageIndex = 0;
             installTime = System.nanoTime();
+            lvl.getBlocks()[instRow][instCol].setType(MapBlock.TYPE_BACKGROUND, -1);
         }
     }
-    public void burn(){
+
+    public void burn() {
         burned = true;
         changeTime = explosionTime / 12;
         imageIndex = 0;
         installTime = System.nanoTime();
     }
+
     @Override
     public void draw(Canvas canvas) {
-        if(lastDrawTime == -1)
+        if (lastDrawTime == -1)
             lastDrawTime = System.nanoTime();
         long deltaTime = (int) ((System.nanoTime() - lastDrawTime) / 1000000);
-        if(deltaTime > changeTime) {
+        if (deltaTime > changeTime) {
             if (!detonated && !burned) {
                 currentImage = bombImage[imageIndex];
                 imageIndex++;
-                if(imageIndex >= 2)
+                if (imageIndex >= 2)
                     imageIndex = 0;
             } else if (detonated && !burned) {
-                if(imageIndex >= 4)
+                if (imageIndex >= 4)
                     imageIndex = 0;
                 currentImage = explosion_center[imageIndex];
                 imageIndex++;
             } else if (detonated && burned) {
-                if(imageIndex >= 6)
+                if (imageIndex >= 6)
                     imageIndex = 0;
-                currentImage= after_explosion[imageIndex];
+                currentImage = after_explosion[imageIndex];
                 imageIndex++;
             }
             lastDrawTime = System.nanoTime();
         }
-        if(detonated && !burned && imageIndex < 4){
-            for(int i = 0; i < spaceLeft; i++)
-                canvas.drawBitmap(explosion_line_horizontal[imageIndex], this.x - i*cellSize, this.y, null);
-            for(int i = 0; i < spaceRight; i++)
-                canvas.drawBitmap(explosion_line_horizontal[imageIndex], this.x + i*cellSize, this.y, null);
-            for(int i = 0; i < spaceUp; i++)
-                canvas.drawBitmap(explosion_line_vertical[imageIndex], this.x, this.y - i*cellSize, null);
-            for(int i = 0; i < spaceDown; i++)
-                canvas.drawBitmap(explosion_line_vertical[imageIndex], this.x, this.y + i*cellSize, null);
+        if (detonated && !burned && imageIndex < 4) {
+            for (int i = 0; i < spaceLeft; i++)
+                canvas.drawBitmap(explosion_line_horizontal[imageIndex], this.x - i * cellSize, this.y, null);
+            for (int i = 0; i < spaceRight; i++)
+                canvas.drawBitmap(explosion_line_horizontal[imageIndex], this.x + i * cellSize, this.y, null);
+            for (int i = 0; i < spaceUp; i++)
+                canvas.drawBitmap(explosion_line_vertical[imageIndex], this.x, this.y - i * cellSize, null);
+            for (int i = 0; i < spaceDown; i++)
+                canvas.drawBitmap(explosion_line_vertical[imageIndex], this.x, this.y + i * cellSize, null);
 
-            canvas.drawBitmap(explosion_up[imageIndex], this.x, this.y - spaceUp*cellSize, null);
-            canvas.drawBitmap(explosion_down[imageIndex], this.x, this.y + spaceDown*cellSize, null);
-            canvas.drawBitmap(explosion_left[imageIndex], this.x - spaceLeft*cellSize, this.y, null);
-            canvas.drawBitmap(explosion_right[imageIndex], this.x + spaceRight*cellSize, this.y, null);
+            canvas.drawBitmap(explosion_up[imageIndex], this.x, this.y - spaceUp * cellSize, null);
+            canvas.drawBitmap(explosion_down[imageIndex], this.x, this.y + spaceDown * cellSize, null);
+            canvas.drawBitmap(explosion_left[imageIndex], this.x - spaceLeft * cellSize, this.y, null);
+            canvas.drawBitmap(explosion_right[imageIndex], this.x + spaceRight * cellSize, this.y, null);
         }
         canvas.drawBitmap(currentImage, this.x, this.y, null);
 
     }
 
-    public boolean inExplosionRange(int row, int column){
-        if(instRow <= row && instRow + spaceDown >= row && instCol == column)
+    public boolean inExplosionRange(int row, int column) {
+        if (instRow <= row && instRow + spaceDown >= row && instCol == column)
             return true;
-        if(instRow >= row && instRow - spaceUp >= row && instCol == column)
+        if (instRow >= row && instRow - spaceUp <= row && instCol == column)
             return true;
-        if(instRow == row && instCol >= column && instCol - spaceLeft <= column)
+        if (instRow == row && instCol >= column && instCol - spaceLeft <= column)
             return true;
-        if(instRow == row && instCol <= column && instCol + spaceRight >= column)
+        if (instRow == row && instCol <= column && instCol + spaceRight >= column)
             return true;
         return false;
     }
 
-    public int getRow(){
+    public int getRow() {
         return instRow;
     }
 
-    public int getColumn(){
+    public int getColumn() {
         return instCol;
     }
 
-    public int getInstId(){
+    public int getInstId() {
         return inst_id;
     }
 
-    public int[] getSpaces(){
+    public int[] getSpaces() {
         return new int[]{spaceUp, spaceDown, spaceRight, spaceLeft};
     }
 
@@ -190,7 +194,8 @@ public class BombObject extends GameObject {
     public int getPower() {
         return this.power;
     }
-    public boolean canRemove(){
+
+    public boolean canRemove() {
         return remove;
     }
 }

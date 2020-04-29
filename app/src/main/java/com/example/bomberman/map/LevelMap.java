@@ -71,14 +71,13 @@ public class LevelMap {
             blocks = new MapBlock[rows+1][columns+1];
             for (int i = 0; i <= rows; i++) {
                 for (int j = 0; j <= columns; j++) {
-                    blocks[i][j] = new MapBlock(null, i * cellSize, j * cellSize, cellSize, 2);
+                    blocks[i][j] = new MapBlock(null, j * cellSize, i * cellSize, cellSize, 2);
                 }
             }
             JSONObject bl;
             for (int i = 0; i < jsonBlocks.length(); i++) {
                 bl = jsonBlocks.getJSONObject(i);
-                blocks[bl.getInt("row")][bl.getInt("col")] = new MapBlock(null,
-                        bl.getInt("row"), bl.getInt("col"), cellSize, bl.getInt("type"));
+                blocks[bl.getInt("row")][bl.getInt("col")].setType(bl.getInt("type"), bl.getInt("bonus"));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -144,7 +143,7 @@ public class LevelMap {
         for (int i = 0; i <= width / cellSize; i++) {
             canvas.drawLine(i * cellSize, 0, i * cellSize, height, linePaint);
         }
-        for (int i = 0; i < bombs.size(); i++) //сделать бомбы наследников объекта блока карты
+        for (int i = 0; i < bombs.size(); i++)
             bombs.get(i).draw(canvas);
         character.draw(canvas);
     }
@@ -160,6 +159,7 @@ public class LevelMap {
     public int getCellSize() {
         return cellSize;
     }
+
     public CharacterObject getCharacter() {
         return character;
     }

@@ -7,69 +7,103 @@ import android.graphics.Paint;
 
 public class MapBlock extends GameObject {
     private boolean destroyed = false;
-    private final int typeSolid = 0, typeBonus = 1, typeBackGround = 2;
-    private int type;
-    Paint solidColor = new Paint();
-    Paint backGroundColor = new Paint();
-    Paint bonusColor = new Paint();
+    public static final int TYPE_SOLID = 0, TYPE_BONUS = 1, TYPE_BACKGROUND = 2, TYPE_BOMB = 3;
+    public static final int BONUS_BOMB = 0, BONUS_FLAME = 1, BONUS_SPEED = 2;
+    private int type, bonusType;
+    Paint blockColor = new Paint();
 
-    public MapBlock(Bitmap image, int row, int col, int cellSize, int type) {
-        super(image, 1, 1, col*cellSize, row*cellSize, cellSize);
-        if(type > 2){
+    public MapBlock(Bitmap image, int x, int y, int cellSize, int type) {
+        super(image, 1, 1, x, y, cellSize);
+        if (type > 2) {
             this.type = 2;
-        }else{
+        } else {
             this.type = type;
         }
 
-        solidColor.setColor(Color.BLACK);
-        solidColor.setStrokeWidth(5);
-        backGroundColor.setColor(Color.WHITE);
-        bonusColor.setColor(Color.GREEN);
-    }
-
-    @Override
-    public void draw(Canvas canvas){
-        //canvas.drawBitmap(image, x, y, null);
-        switch(type){
-            case typeSolid:
-                canvas.drawRect(x, y, x + cellSize, y + cellSize, solidColor);
+        switch (this.type) {
+            case TYPE_SOLID:
+                blockColor.setColor(Color.BLACK);
                 break;
-            case typeBonus:
-                canvas.drawRect(x, y, x + cellSize, y + cellSize, bonusColor);
+            case TYPE_BONUS:
+                blockColor.setColor(Color.BLUE);
                 break;
-            case typeBackGround:
-                canvas.drawRect(x, y, x + cellSize, y + cellSize, backGroundColor);
+            case TYPE_BACKGROUND:
+                blockColor.setColor(Color.WHITE);
                 break;
+            default:
+                blockColor.setColor(Color.parseColor("#FF00FF"));
         }
     }
 
-    public void destroy(){
-        destroyed = true;
-        bonusColor.setColor(Color.RED);
+    @Override
+    public void draw(Canvas canvas) {
+        canvas.drawRect(x, y, x + cellSize, y + cellSize, blockColor);
     }
 
-    public boolean isDestroyed(){
+    public void destroy() {
+        destroyed = true;
+        switch (bonusType) {
+            case BONUS_BOMB:
+                blockColor.setColor(Color.GREEN);
+                break;
+            case BONUS_FLAME:
+                blockColor.setColor(Color.RED);
+                break;
+            case BONUS_SPEED:
+                blockColor.setColor(Color.YELLOW);
+                break;
+            default:
+                blockColor.setColor(Color.WHITE);
+        }
+    }
+
+    public boolean isDestroyed() {
         return destroyed;
     }
 
-    public int getType(){
+    public int getType() {
         return type;
     }
+    public int getTypeBonus(){
+        return bonusType;
+    }
 
-    public boolean isPassable(){
-        switch(type){
-            case typeBonus:
-                if(destroyed)
+    public boolean isPassable() {
+        switch (type) {
+            case TYPE_BONUS:
+                if (destroyed)
                     return true;
                 else
                     return false;
-            case typeBackGround: return true;
+            case TYPE_BACKGROUND:
+                return true;
             default:
                 return false;
         }
     }
 
-    public void setType(int type){
+    public void setType(int type, int bonusType) {
         this.type = type;
+        this.bonusType = bonusType;
+        switch (this.type) {
+            case TYPE_SOLID:
+                blockColor.setColor(Color.BLACK);
+                break;
+            case TYPE_BONUS:
+                blockColor.setColor(Color.BLUE);
+                break;
+            case TYPE_BACKGROUND:
+            case TYPE_BOMB:
+                blockColor.setColor(Color.WHITE);
+                break;
+            default:
+                blockColor.setColor(Color.parseColor("#FF00FF"));
+        }
+    }
+
+    public int takeBonus() {
+        type = TYPE_BACKGROUND;
+        blockColor.setColor(Color.WHITE);
+        return bonusType;
     }
 }

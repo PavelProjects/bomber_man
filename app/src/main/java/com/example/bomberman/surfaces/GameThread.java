@@ -2,14 +2,15 @@ package com.example.bomberman.surfaces;
 
 import android.graphics.Canvas;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 
 public class GameThread extends Thread{
     private boolean running;
 
-    private GameSurface surface;
+    private SurfaceView surface;
     private SurfaceHolder holder;
 
-    public GameThread(GameSurface surface, SurfaceHolder holder){
+    public GameThread(SurfaceView surface, SurfaceHolder holder){
         this.surface = surface;
         this.holder = holder;
     }
@@ -23,7 +24,6 @@ public class GameThread extends Thread{
             try{
                 canvas = this.holder.lockCanvas();
                 synchronized (canvas){
-                    this.surface.update();
                     this.surface.draw(canvas);
                 }
             }catch (Exception e){

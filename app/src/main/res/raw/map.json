@@ -1,78 +1,104 @@
 {
   "cellSize": 64,
   "name": "test",
-  "chr_row": 3,
-  "chr_col": 1,
+  "chr_row": 6,
+  "chr_col": 6,
   "blocks": [
     {
       "row": 1,
       "col": 1,
-      "type": 0
+      "type": 0,
+      "bonus": -1
     },
     {
       "row": 1,
       "col": 2,
-      "type": 0
+      "type": 0,
+      "bonus": -1
     },
     {
       "row": 1,
       "col": 3,
-      "type": 0
+      "type": 0,
+      "bonus": -1
     },
     {
       "row": 1,
       "col": 4,
-      "type": 0
+      "type": 0,
+      "bonus": -1
     },
     {
       "row": 1,
       "col": 5,
-      "type": 0
+      "type": 0,
+      "bonus": -1
     },
     {
       "row": 1,
       "col": 6,
-      "type": 0
+      "type": 0,
+      "bonus": -1
     },
     {
       "row": 2,
       "col": 6,
-      "type": 0
+      "type": 0,
+      "bonus": -1
     },
     {
       "row": 3,
       "col": 1,
-      "type": 0
+      "type": 0,
+      "bonus": -1
     },
     {
       "row": 3,
       "col": 2,
-      "type": 0
+      "type": 0,
+      "bonus": -1
     },
     {
       "row": 3,
       "col": 3,
-      "type": 0
+      "type": 0,
+      "bonus": -1
     },
     {
       "row": 3,
       "col": 4,
-      "type": 0
+      "type": 0,
+      "bonus": -1
     },
     {
       "row": 3,
       "col": 6,
-      "type": 0
+      "type": 0,
+      "bonus": -1
     },
     {
       "row": 4,
       "col": 6,
-      "type": 0
+      "type": 0,
+      "bonus": -1
     },
     {
       "row": 4,
       "col": 4,
-      "type": 1
+      "type": 1,
+      "bonus": 0
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "type": 1,
+      "bonus": 1
+    },
+    {
+      "row": 4,
+      "col": 6,
+      "type": 1,
+      "bonus": 2
     }
   ]
 }

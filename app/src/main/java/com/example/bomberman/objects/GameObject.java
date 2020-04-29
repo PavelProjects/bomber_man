@@ -8,7 +8,7 @@ import com.example.bomberman.map.LevelMap;
 public class GameObject{
     protected Bitmap image;
     protected final int imageHeight, imageWidth;
-    protected final int rows, columns;
+    protected final int imageRows, imageColumns;
     protected int cellSize;
 
     protected int x;
@@ -17,10 +17,9 @@ public class GameObject{
     public GameObject(Bitmap image, int rows, int columns, int x, int y, int cellSize){
         this.image = image;
         this.x = x;
-
         this.y = y;
-        this.rows = rows;
-        this.columns = columns;
+        this.imageRows = rows;
+        this.imageColumns = columns;
         this.cellSize = cellSize;
         if(image != null) {
             this.imageHeight = image.getHeight() / rows;

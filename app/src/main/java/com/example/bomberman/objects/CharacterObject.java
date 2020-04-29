@@ -18,7 +18,7 @@ public class CharacterObject extends GameObject {
     private Bitmap currentImage;
     private Bitmap topToBottom[], leftToRight[], rightToLeft[], bottomToTop[], deadImage[];
     private boolean burned = false, dead = false;
-    private final int padding = 2;
+    private final int blocksPadding = 2;
 
     Paint dot = new Paint();
 
@@ -33,13 +33,13 @@ public class CharacterObject extends GameObject {
         this.width = cellSize - 10;
         this.height = 4 * cellSize / 3;
 
-        topToBottom = new Bitmap[this.columns];
-        bottomToTop = new Bitmap[this.columns];
-        rightToLeft = new Bitmap[this.columns];
-        leftToRight = new Bitmap[this.columns];
-        deadImage = new Bitmap[this.columns];
+        topToBottom = new Bitmap[this.imageColumns];
+        bottomToTop = new Bitmap[this.imageColumns];
+        rightToLeft = new Bitmap[this.imageColumns];
+        leftToRight = new Bitmap[this.imageColumns];
+        deadImage = new Bitmap[this.imageColumns];
 
-        for (int i = 0; i < this.columns; i++) {
+        for (int i = 0; i < this.imageColumns; i++) {
             topToBottom[i] = Bitmap.createScaledBitmap(createSubImageAt(0, i), width, height, false);
             rightToLeft[i] = Bitmap.createScaledBitmap(createSubImageAt(1, i), width, height, false);
             leftToRight[i] = Bitmap.createScaledBitmap(createSubImageAt(2, i), width, height, false);
@@ -66,7 +66,7 @@ public class CharacterObject extends GameObject {
 
             this.x = x + (int) (x_dir * distance);
             this.y = y + (int) (y_dir * distance);
-            if(!canMove(lvl.getBlocks())){
+            if (!canMove(lvl.getBlocks())) {
                 this.x = x - (int) (x_dir * distance);
                 this.y = y - (int) (y_dir * distance);
             }
@@ -90,7 +90,7 @@ public class CharacterObject extends GameObject {
         deltaTime = (int) (System.nanoTime() - lastImageChange) / 1000000;
         if (deltaTime > 200) {
             if (!burned) {
-                if (image_index >= columns) {
+                if (image_index >= imageColumns) {
                     image_index = 1;
                 }
                 if (y_dir > 0) {
@@ -103,7 +103,7 @@ public class CharacterObject extends GameObject {
                     currentImage = leftToRight[image_index];
                 }
             } else {
-                if (image_index >= columns) {
+                if (image_index >= imageColumns) {
                     dead = true;
                 } else {
                     currentImage = deadImage[image_index];
@@ -136,7 +136,7 @@ public class CharacterObject extends GameObject {
         canvas.drawBitmap(currentImage, x, y, null);
 
         dot.setColor(Color.RED);
-        canvas.drawCircle(x + width / 2, y + height / 2, 10, dot);
+        canvas.drawCircle(x + width / 2, y + 2 * height / 3, 10, dot);
         dot.setColor(Color.BLUE);
         canvas.drawCircle(x, y + cellSize / 2, 5, dot);
         canvas.drawCircle(x - 5 + width, y + cellSize / 2, 5, dot);
@@ -160,7 +160,17 @@ public class CharacterObject extends GameObject {
         this.updateImage();
         if (lvl.getBlocks()[getRow()][getColumn()].getType() == 1 && lvl.getBlocks()[getRow()][getColumn()].isDestroyed()) {
             Log.d("Character", "Bonus");
-            lvl.getBlocks()[getRow()][getColumn()].setType(2);
+            switch (lvl.getBlocks()[getRow()][getColumn()].takeBonus()) {
+                case MapBlock.BONUS_BOMB:
+                    bomb_count++;
+                    break;
+                case MapBlock.BONUS_FLAME:
+                    bomb_power++;
+                    break;
+                case MapBlock.BONUS_SPEED:
+                    speed += 0.1;
+                    break;
+            }
         }
         if (dead) {
             dead = burned = false;
@@ -177,57 +187,57 @@ public class CharacterObject extends GameObject {
 
     public boolean canMove(MapBlock[][] blocks) {
         MapBlock block;
-        if(x_dir != 0) {
+        if (x_dir != 0) {
             block = nextCellBlock(x + width / 2, y + cellSize / 2, blocks);
             if (x_dir > 0) {
-                if (block != null && !block.isPassable() && block.getX() < x + width + padding) {
+                if (block != null && !block.isPassable() && block.getX() < x + width + blocksPadding) {
 //                Log.d("Map", "stop1");
                     return false;
                 }
             }
             if (x_dir < 0) {
-                if (block != null && !block.isPassable() && block.getX() + cellSize > x - padding) {
+                if (block != null && !block.isPassable() && block.getX() + cellSize > x - blocksPadding) {
 //                Log.d("Map", "stop2");
                     return false;
                 }
             }
             block = nextCellBlock(x + width / 2, y + height, blocks);
             if (x_dir > 0) {
-                if (block != null && !block.isPassable() && block.getX() < x + width + padding) {
+                if (block != null && !block.isPassable() && block.getX() < x + width + blocksPadding) {
 //                Log.d("Map", "stop3");
                     return false;
                 }
             }
             if (x_dir < 0) {
-                if (block != null && !block.isPassable() && block.getX() + cellSize > x - padding) {
+                if (block != null && !block.isPassable() && block.getX() + cellSize > x - blocksPadding) {
 //                Log.d("Map", "stop4");
                     return false;
                 }
             }
         }
-        if(y_dir != 0) {
+        if (y_dir != 0) {
             block = nextCellBlock(x, y + height / 2, blocks);
             if (y_dir > 0) {
-                if (block != null && !block.isPassable() && block.getY() < y + height + padding) {
+                if (block != null && !block.isPassable() && block.getY() < y + height + blocksPadding) {
 //                Log.d("Map", "stop5");
                     return false;
                 }
             }
             if (y_dir < 0) {
-                if (block != null && !block.isPassable() && block.getY() + cellSize > y + cellSize / 2 - padding) {
+                if (block != null && !block.isPassable() && block.getY() + cellSize > y + cellSize / 2 - blocksPadding) {
 //                Log.d("Map", "stop6");
                     return false;
                 }
             }
             block = nextCellBlock(x + width, y + height / 2, blocks);
             if (y_dir > 0) {
-                if (block != null && !block.isPassable() && block.getY() < y + height + padding) {
+                if (block != null && !block.isPassable() && block.getY() < y + height + blocksPadding) {
 //                Log.d("Map", "stop7");
                     return false;
                 }
             }
             if (y_dir < 0) {
-                if (block != null && !block.isPassable() && block.getY() + cellSize > y + cellSize / 2 - padding) {
+                if (block != null && !block.isPassable() && block.getY() + cellSize > y + cellSize / 2 - blocksPadding) {
 //                Log.d("Map", "stop8"  );
                     return false;
                 }
@@ -254,7 +264,7 @@ public class CharacterObject extends GameObject {
         if (lastPlantTime == -1)
             lastPlantTime = System.nanoTime();
         int delta = (int) (System.nanoTime() - lastPlantTime) / 1000000;
-        if (delta > 200 && installed <= bomb_count) {
+        if (delta > 200 && installed < bomb_count && lvl.getBlocks()[getRow()][getColumn()].isPassable()) {
             installed++;
             lastPlantTime = System.nanoTime();
             lvl.getBombs().add(new BombObject(lvl, image, 6, 7, id,
@@ -266,22 +276,6 @@ public class CharacterObject extends GameObject {
         if (installed > 0) {
             installed--;
         }
-    }
-
-    public void setX_dir(int x) {
-        this.x_dir = x;
-    }
-
-    public void setY_dir(int y) {
-        this.y_dir = y;
-    }
-
-    public int getX_dir() {
-        return x_dir;
-    }
-
-    public int getY_dir() {
-        return y_dir;
     }
 
     public void setSpeed(float s) {
@@ -326,7 +320,7 @@ public class CharacterObject extends GameObject {
 
     public int getRow() {
         //Log.d("Character", ((y + height / 2) / cellSize) + " " + (y + height / 2));
-        return (y + height / 2) / cellSize;
+        return (y + 2 * height / 3) / cellSize;
     }
 
     public int getColumn() {

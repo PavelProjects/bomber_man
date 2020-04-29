@@ -2,23 +2,17 @@ package com.example.bomberman.surfaces;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.example.bomberman.R;
-import com.example.bomberman.map.LevelMap;
-import com.example.bomberman.objects.ControlPanel;
+import com.example.bomberman.map.MapEditor;
 
-
-public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
+public class EditorSurface extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
-    private ControlPanel controlPanel;
-    private LevelMap levelMap;
-    private int cellSize;
+    private MapEditor mapEditor;
 
-    public GameSurface(Context context) {
+    public EditorSurface(Context context) {
         super(context);
         this.setFocusable(true);
         this.getHolder().addCallback(this);
@@ -26,9 +20,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        this.levelMap = new LevelMap(this, getWidth(), getHeight(), R.raw.map);
-        cellSize = levelMap.getCellSize();
-        this.controlPanel = new ControlPanel(this, 3*cellSize, getHeight() - 3*cellSize, Color.BLUE,  cellSize, cellSize);
+        this.mapEditor = new MapEditor(this, getWidth(), getHeight());
 
         this.thread = new GameThread(this, holder);
         this.thread.setRunning(true);
@@ -37,13 +29,20 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        controlPanel.pressEvent(event, this.levelMap.getCharacter());
+        if (event.getAction() == MotionEvent.ACTION_DOWN)
+            mapEditor.pressEvent((int) event.getX(), (int) event.getY());
         return true;
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
+    }
+
+    @Override
+    public void draw(Canvas canvas) {
+        super.draw(canvas);
+        this.mapEditor.draw(canvas);
     }
 
     @Override
@@ -58,17 +57,5 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                 e.printStackTrace();
             }
         }
-    }
-
-    @Override
-    public void draw(Canvas canvas){
-        super.draw(canvas);
-        this.levelMap.update();
-        this.levelMap.draw(canvas);
-        this.controlPanel.draw(canvas);
-    }
-
-    public LevelMap getLevelMap(){
-        return levelMap;
     }
 }
