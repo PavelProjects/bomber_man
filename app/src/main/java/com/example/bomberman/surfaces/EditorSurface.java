@@ -58,4 +58,8 @@ public class EditorSurface extends SurfaceView implements SurfaceHolder.Callback
             }
         }
     }
+
+    public void exit(){
+        mapEditor.parsToJSON();
+    }
 }

@@ -31,6 +31,7 @@ public class LevelMap {
     private Paint linePaint = new Paint();
     private int cellSize;
     private GameSurface surface;
+    private boolean loaded = false;
     private ArrayList<BombObject> bombs = new ArrayList<>();
 
     public LevelMap(GameSurface surface, int width, int height, int map) {
@@ -47,7 +48,8 @@ public class LevelMap {
     private void loadFromJson(int map) {
         String jsonString = null;
         try {
-            InputStream inputStream = surface.getResources().openRawResource(map);
+            //InputStream inputStream = surface.getResources().openRawResource(map);
+            InputStream inputStream = surface.getContext().openFileInput("map.json");
             InputStreamReader inputReader = new InputStreamReader(inputStream);
             BufferedReader bufferedReader = new BufferedReader(inputReader);
             String line;
@@ -60,7 +62,7 @@ public class LevelMap {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //Log.d("Map", jsonString);
+        Log.d("Map", jsonString);
         try {
             JSONObject jsonMap = new JSONObject(jsonString);
             this.cellSize = jsonMap.getInt("cellSize");
@@ -79,6 +81,7 @@ public class LevelMap {
                 bl = jsonBlocks.getJSONObject(i);
                 blocks[bl.getInt("row")][bl.getInt("col")].setType(bl.getInt("type"), bl.getInt("bonus"));
             }
+            loaded = true;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -176,5 +179,9 @@ public class LevelMap {
 
     public int getHeight(){
         return surface.getHeight();
+    }
+
+    public boolean isLoaded(){
+        return loaded;
     }
 }

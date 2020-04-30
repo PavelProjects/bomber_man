@@ -63,9 +63,11 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void draw(Canvas canvas){
         super.draw(canvas);
-        this.levelMap.update();
-        this.levelMap.draw(canvas);
-        this.controlPanel.draw(canvas);
+        if(levelMap.isLoaded()) {
+            this.levelMap.update();
+            this.levelMap.draw(canvas);
+            this.controlPanel.draw(canvas);
+        }
     }
 
     public LevelMap getLevelMap(){
